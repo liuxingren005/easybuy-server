@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.maven.mapper.ProductCategoryMapper">
+
+    <!-- resultMap 显式映射 -->
+    <!-- <resultMap id="productCategoryMap" type="ProductCategory">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="type" column="type"/>
+        <result property="iconClass" column="icon_class"/>
+    </resultMap> -->
+
+    <!-- 查询所有分类 -->
+    <select id="selectAll" resultType="productCategory">
+        SELECT *
+        FROM easybuy_product_category
+        WHERE is_delete = 0
+        ORDER BY id ASC
+    </select>
+
+    <!-- 根据父级ID查询子分类 -->
+    <select id="selectByParentId" resultType="productCategory">
+        SELECT *
+        FROM easybuy_product_category
+        WHERE parent_id = #{parentId}
+          AND is_delete = 0
+        ORDER BY id ASC
+    </select>
+
+    <!-- 根据类型查询分类 -->
+    <select id="selectByType" resultType="productCategory">
+        SELECT *
+        FROM easybuy_product_category
+        WHERE type = #{type}
+          AND is_delete = 0
+        ORDER BY id ASC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultType="productCategory">
+        SELECT *
+        FROM easybuy_product_category
+        WHERE id = #{id}
+          AND is_delete = 0
+    </select>
+
+    <!-- 分页条件查询 -->
+    <select id="selectPage" resultType="productCategory">
+        SELECT * FROM easybuy_product_category
+        <where>
+            is_delete = 0
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+        </where>
+        ORDER BY id ASC
+    </select>
+
+    <!-- 根据名称和父级ID查询（同级名称唯一） -->
+    <select id="selectByNameAndParentId" resultType="productCategory">
+        SELECT *
+        FROM easybuy_product_category
+        WHERE name = #{name}
+          AND parent_id = #{parentId}
+          AND is_delete = 0
+            LIMIT 1
+    </select>
+
+    <!-- 子分类统计 -->
+    <select id="countByParentId" resultType="int">
+        SELECT COUNT(*)
+        FROM easybuy_product_category
+        WHERE parent_id = #{parentId}
+          AND is_delete = 0
+    </select>
+
+    <!-- 商品引用统计 -->
+    <select id="countProductByCategoryId" resultType="int">
+        SELECT COUNT(*)
+        FROM easybuy_product
+        WHERE is_delete = 0
+          AND (
+            category_level1_id = #{categoryId}
+            OR category_level2_id = #{categoryId}
+            OR category_level3_id = #{categoryId}
+          )
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO easybuy_product_category (name, parent_id, type, icon_class)
+        VALUES
+            (#{name}, #{parentId}, #{type}, #{iconClass})
+    </insert>
+
+    <!-- 修改 -->
+    <update id="update">
+        UPDATE easybuy_product_category
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="iconClass != null">
+                icon_class = #{iconClass},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <!-- <delete id="deleteById">
+        DELETE
+        FROM easybuy_product_category
+        WHERE id = #{id}
+    </delete> -->
+    <!-- 删除（逻辑删除） -->
+    <update id="deleteById">
+        UPDATE easybuy_product_category
+        SET is_delete = 1
+        WHERE id = #{id}
+    </update>
+</mapper>

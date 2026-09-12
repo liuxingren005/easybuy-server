@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.maven.mapper.RefundMapper">
+
+    <!-- 新增退款 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO easybuy_refund (order_id, refund_no, amount, reason, pay_type, transaction_id, create_time)
+        VALUES
+            (#{orderId}, #{refundNo}, #{amount}, #{reason}, #{payType}, #{transactionId}, #{createTime})
+    </insert>
+
+    <!-- 根据订单ID查询退款记录（按时间正序） -->
+    <select id="selectByOrderId" resultType="refundRecord">
+        SELECT *
+        FROM easybuy_refund
+        WHERE order_id = #{orderId}
+        ORDER BY create_time ASC
+    </select>
+
+</mapper>

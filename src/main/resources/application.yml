@@ -1,0 +1,158 @@
+# server
+server:
+  port: 8080
+  # 监听所有网络接口
+  address: 0.0.0.0
+  # servlet encoding
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+spring:
+  # 激活开发环境
+  profiles:
+    active: dev
+  # spring datasource
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/easybuy?useSSL=false&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  # spring jackson
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+  # spring redis
+  data:
+    redis:
+      host: 192.168.222.4
+      port: 6379
+      password: 123456
+      database: 0
+  # 文件上传
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  # elasticsearch
+  elasticsearch:
+    uris: http://192.168.222.4:9200
+    username: es
+    password: 123456
+  # Spring Mail 邮箱服务（注册/找回密码/修改密码 验证码）
+  # 开发环境可使用 QQ 邮箱
+  mail:
+    host: smtp.qq.com # QQ 邮箱：host=smtp.qq.com port=465
+    port: 465
+    username: 3996175938@qq.com # username=xxx@qq.com
+    password: mutowisapwdhccih    # QQ 邮箱使用"授权码"
+    protocol: smtps
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          starttls:
+            enable: true
+            required: true
+
+# mybatis
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: org.maven.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+# pagehelper
+pagehelper:
+  reasonable: true
+  support-methods-arguments: true
+
+# SFTP 文件服务器
+sftp:
+  host: 192.168.222.4
+  port: 22
+  username: sftpuser
+  password: 123456
+  #private-key: ~/.ssh/id_rsa
+  remote-root: /uploads/easybuy
+
+# logging
+logging:
+  level:
+    org.maven: debug
+#    org.mybatis: debug
+
+# SpringDoc OpenAPI(Swagger)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# JWT + Redis 会话跟踪
+jwt:
+  # HS256 密钥（至少 256 位 - 32 字节）
+  secret: easybuy-jwt-secret-key-0123456789-abcdef
+  # 令牌有效期
+  expire: 3600
+  # 请求头名称
+  header: Authorization
+  # 令牌 JWT ← Basic xxx（账密）、Digest xxx、Bearer xxx（JWT）
+  prefix: "Bearer "
+
+# 权限校验（白名单）
+auth:
+  # 全方法白名单
+  # /user/login、/user/register、/user/sendEmailCode
+  # /doc.html                                        Knife4j
+  # /swagger-ui.html、/swagger-ui/**、/v3/api-docs/**  Swagger
+  # /webjars/**                                      js/css
+  # /favicon.ico 浏览器 -> Nginx (前端服务器) -> Spring Boot (后端服务器)
+  white-list-all: [ /user/login, /user/register, /user/sendEmailCode, /doc.html, /swagger-ui.html, /v3/api-docs/**, /swagger-ui/**, /webjars/**, /favicon.ico, /alipay/notify, /alipay/return, /wechat/notify ]
+  # GET只读白名单
+  # /product/**             商品相关查询
+  # /productCategory/**     商品分类查询
+  # /news/list              新闻列表
+  # /news/{id:\d+}          新闻详情
+  white-list-get: [ /product/**, /productCategory/**, /news/list, "/news/{id:\\d+}" ] # YAML
+
+# 支付宝
+alipay:
+  app-id: 9021000167621589          # 沙箱/正式应用APPID 9021000167621589
+  app-private-key: MIIEwAIBADANBgkqhkiG9w0BAQEFAASCBKowggSmAgEAAoIBAQChrtkqv0qT0B6aK+AqtyyD3n8f5WkDNooGcug2PnyO5T0kFpSZckTg1BP0wKCdr/ySTdcII7IHWq+7PlokiYA28wx2+S/LOKhVuBpgX5Sw7sBm+7XXRrkfjNMsScY1sMC/CD86J4EbZ0N2eLCWwMa+B4jQhmwIfrWc3UlTDYNkBncRmTYJheK3GmiWaSPmo7nns7ASepI+pK8yVo5DwmnD0ZmgTfqI8GwNWXSZ+SyirDYDNOGwwlaiNqMVqjw0RPda3gXmdEmrfdXlFzTVKL1mg30fIJd6oz+ptXXZoKFim+nw+fnhFfNXaMiiIm5Vq6qCh1GMqFWZwa2JnulnDcdFAgMBAAECggEBAIVWzYKTf82nNZWv2Y9gwTV/qReE+rXLpMjsutUBc3flVicM+EAUHPnN7SdMNSnWmVWPHGd6CLhH8eVZ5r17KGIoz37Owru2Xh1TV21jZh0EyWgk7jI8ATAj04QS04Qz4MGq63nqWm9fGiP6JKgvE7hkPlC6ix32YZCcbnwwCMvTtjqSXINu1+DktgAzyzXf/xoR4HATAW2nkl2/ynbt0IGlvTM7666ZpYw7t/RRJQTSHtVPaVDzzcfo8ZU/n5cvsgP+tmaooLIxSryn7bWso+emonF+F3VkMrijxeSF4TIXOcVhDwqf51qIyhoMy1KeMfBGMZUl6vVLck5tQm9ZrAECgYEA6ijJM9PO9+AgooO053Y03YMJG5U3HadObuwHcf9lU5GPg72n1AMAGz+74Zpq/5740G7qrFQ1Vfz+DrZ1RF18iGTP0pPhy6BUvoFFhe9xn6f92E+/9FBwhIfRgXDnfFLUH59mfv8N8lL1IsE7Lz/WOizxIn/347Tlbtm7qwBIDf0CgYEAsMN8YoEkX1JedWpDt8VCM0U2DKyczFiyQNsQUmvO4Tm7Mc6srE8Lp3kItrFNfMmKTeY4ogjl+sEnVN+BG83rZvx+Y1gvVNdj6igDMnh1+NEdd9TU2S7EDBXPWSnELqYFbDXdC7o/2QeO6I4wlJKudsiDYWR86TOR8Kh2fSrE/OkCgYEAqSgtsbMhoQ/Yg46B8XQDXMJ8oeB5oIJsttTry/6kRGqzMoif5RkFyqmQILpc8az2Mhzuiu+KWEQbhKVqsaiXfjDVsVoDlAaPMdBRWSBRBPVm/A0grm4t2pADWW8myzlK5E1SzguTF6u2SxUsnEWRjRVKXZH0khrsY9gHKtFZPEECgYEAhVTPTBYRc31UFsjzD3lReA7quCCznUgCHP2gkCsVv7mmQ+mbQdXV+ptHQVb4FfqHwj631TFVGBH+MvzsDCcFO4eVZiYsfZiCmytXTgijI+3Iho0ZiEDITD1fS+g/PNiqGnd+psv0QSZ8W1p1tnv18U9KGnqL5fOqT5ci2UMbl5ECgYEAyYCS9Ci/WualM8o8fsSRG3U6IGI7+Ab5yOUcPbsZs/bkW++l+8Esn16LX3iungyF5StQzpxZxluR55c4hGYc3bsWkWfQ3QV4aJwYfttXg8m4UlOIVRrTKI+nMhUU23wUE+ttILLWBu9eziE6L5doV3ZP6emgejsSdmNEQQEON5k=   # 应用私钥（PKCS8格式）
+  alipay-public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3pdxPtlZ1ggBriqbMzIn1MQ+SOWHQUYXH6Vdb0PxQB57PMc7pW12CVlaVzxb5HSwWXCj4mbIFuuYAC4+TI4C/lR56qNzaYo5QXzUZ4fSXBikjAiFK8KWOdUmFqrCW545s2mtv0zxtX5Y8f3ciDYEtR9K/xxX6gOF5kVsZYsI1YZDuzHEukVacs9Pg1MjDDdtBawQcqnklpNtIDjYaNkpskaPr8DT1sbNPbT8cPBXQtf9cWgfRKJ+d8sLNSeNZC5EpvstwmYigAzoDmOQ9pqe4nky05/n2crByNiVZ3sJ9sVrIe45h5gAqY9tdB3F/JQJZnlm4EGgLq+PZRQRvKEx6wIDAQAB          # 支付宝公钥
+  gateway: https://openapi-sandbox.dl.alipaydev.com/gateway.do  # 沙箱网关；正式环境用 https://openapi.alipay.com/gateway.do
+  sign-type: RSA2
+  charset: UTF-8
+  format: json
+  notify-url: http://107.174.137.2/alipay/notify   # 支付异步回调地址（公网访问）
+  return-url: http://107.174.137.2/alipay/return  # 支付同步跳转地址（前端页面）
+
+# 微信
+wechat:
+  pay:
+    appid: wxa738052168ff7dc8           # 微信AppID（公众号/小程序/移动应用）
+    mch-id: 1606612310             # 商户号
+    api-v3-key: hnjyet993603562456bdqn4685030352  # APIv3密钥（32位）
+    private-key-path: classpath:wechat/apiclient_key.pem  # 商户API私钥文件路径
+    merchant-serial-number: 328B40F3A627A7E88A714FF5CA8027BE767EF3F2  # 商户API证书序列号
+    notify-url: http://107.174.137.2/wechat/notify   # 微信支付异步回调地址（开发环境用 http；生产：https + 域名 + 可信证书）
+
+# 邮箱验证码（Redis 存储）
+email:
+  code:
+    # 验证码有效期（秒）
+    expire-seconds: 300
+    # 同一邮箱发送频率（秒）
+    interval-seconds: 60
+    # 模板标题
+    subject: "易买网 - 邮箱验证码"
+    # 发件人（spring.mail.username）
+    from: "易买网 <3996175938@qq.com>"

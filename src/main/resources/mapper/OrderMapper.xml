@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.maven.mapper.OrderMapper">
+
+    <!-- resultMap 显式映射 -->
+    <!-- <resultMap id="orderMap" type="org.maven.entity.Order">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="loginName" column="login_name"/>
+        <result property="userAddress" column="user_address"/>
+        <result property="createTime" column="create_time"/>
+        <result property="cost" column="cost"/>
+        <result property="serialNumber" column="serial_number"/>
+    </resultMap> -->
+
+    <!-- 分页条件查询 -->
+
+    <!-- 管理员分页条件查询全部订单 -->
+    <select id="selectPage" resultType="order">
+        SELECT * FROM easybuy_order
+        <where>
+            is_delete = 0
+            <if test="loginName != null and loginName != ''">
+                AND login_name LIKE CONCAT('%', #{loginName}, '%')
+            </if>
+            <if test="serialNumber != null and serialNumber != ''">
+                AND serial_number LIKE CONCAT('%', #{serialNumber}, '%')
+            </if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="startTime != null and startTime != ''">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND create_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 用户分页条件查询自己订单 -->
+    <select id="selectPageByUserId" resultType="order">
+        SELECT * FROM easybuy_order
+        <where>
+            is_delete = 0
+            AND user_id = #{userId}
+            <if test="serialNumber != null and serialNumber != ''">
+                AND serial_number LIKE CONCAT('%', #{serialNumber}, '%')
+            </if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="startTime != null and startTime != ''">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND create_time &lt;= CONCAT(#{endTime}, ' 23:59:59')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultType="order">
+        SELECT *
+        FROM easybuy_order
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据订单号查询 -->
+    <select id="selectBySerialNumber" resultType="order">
+        SELECT *
+        FROM easybuy_order
+        WHERE serial_number = #{serialNumber}
+    </select>
+
+    <!-- 根据用户ID查询订单列表 -->
+    <select id="selectByUserId" resultType="order">
+        SELECT *
+        FROM easybuy_order
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO easybuy_order (user_id, login_name, user_address, create_time, cost, serial_number, status,
+                                   is_delete, pay_type, pay_time, transaction_id, refund_time, refund_reason,
+                                   close_time, close_reason)
+        VALUES
+            (#{userId}, #{loginName}, #{userAddress}, #{createTime}, #{cost}, #{serialNumber}, 1, 0,
+             #{payType}, #{payTime}, #{transactionId},
+             #{refundTime}, #{refundReason}, #{closeTime}, #{closeReason})
+    </insert>
+
+    <!-- 修改 -->
+    <update id="update">
+        UPDATE easybuy_order
+        <set>
+            <if test="userAddress != null">
+                user_address = #{userAddress},
+            </if>
+            <if test="cost != null">
+                cost = #{cost},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 修改订单状态 -->
+    <update id="updateStatus">
+        UPDATE easybuy_order
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 支付订单：更新状态、支付方式、支付时间、交易号 -->
+    <update id="payOrder">
+        UPDATE easybuy_order
+        SET status = 2,
+            pay_type = #{payType},
+            pay_time = #{payTime},
+            transaction_id = #{transactionId}
+        WHERE id = #{id}
+          AND status = 1
+    </update>
+
+    <!-- 关闭订单：更新状态、关闭时间、关闭原因 -->
+    <update id="closeOrder">
+        UPDATE easybuy_order
+        SET status = 3,
+            close_time = #{closeTime},
+            close_reason = #{closeReason}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 退款落库：累加退款金额，部分退款保持 status=2（已付款），全额退款 status=4（已退款） -->
+    <update id="refund">
+        UPDATE easybuy_order
+        SET refund_amount = #{refundAmount},
+            status = #{status},
+            refund_time = #{refundTime},
+            refund_reason = #{refundReason}
+        WHERE id = #{id}
+          AND status = 2
+    </update>
+
+    <!-- 删除 -->
+    <!--
+    <delete id="deleteById">
+        DELETE
+        FROM easybuy_order
+        WHERE id = #{id}
+    </delete>
+    -->
+
+    <!-- 逻辑删除 -->
+    <update id="deleteById">
+        UPDATE easybuy_order
+        SET is_delete = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.maven.mapper.ProductMapper">
+
+    <!-- 分页条件查询 -->
+    <select id="selectPage" resultType="product">
+        SELECT * FROM easybuy_product
+        WHERE is_delete = 0
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND create_time &lt;= #{endTime}
+        </if>
+        <if test="categoryLevel1Id != null">
+            AND category_level1_id = #{categoryLevel1Id}
+        </if>
+        <if test="categoryLevel2Id != null">
+            AND category_level2_id = #{categoryLevel2Id}
+        </if>
+        <if test="categoryLevel3Id != null">
+            AND category_level3_id = #{categoryLevel3Id}
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 查询全部商品 -->
+    <select id="selectAll" resultType="product">
+        SELECT *
+        FROM easybuy_product
+        WHERE is_delete = 0
+        ORDER BY id
+    </select>
+
+    <!-- 根据一级分类ID查询商品 -->
+    <select id="selectByCategoryLevel1Id" resultType="product">
+        SELECT *
+        FROM easybuy_product
+        WHERE is_delete = 0
+          AND category_level1_id = #{categoryLevel1Id}
+        ORDER BY id DESC
+            LIMIT #{limit}
+    </select>
+
+    <!-- 根据二级分类ID查询商品 -->
+    <select id="selectByCategoryLevel2Id" resultType="product">
+        SELECT *
+        FROM easybuy_product
+        WHERE is_delete = 0
+          AND category_level2_id = #{categoryLevel2Id}
+        ORDER BY id DESC
+            LIMIT #{limit}
+    </select>
+
+    <!-- 根据三级分类ID查询商品 -->
+    <select id="selectByCategoryLevel3Id" resultType="product">
+        SELECT *
+        FROM easybuy_product
+        WHERE is_delete = 0
+          AND category_level3_id = #{categoryLevel3Id}
+        ORDER BY id DESC
+            LIMIT #{limit}
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultType="product">
+        SELECT *
+        FROM easybuy_product
+        WHERE id = #{id}
+          AND is_delete = 0
+    </select>
+
+    <!-- 前台-热门推荐（随机抽取商品） -->
+    <select id="selectHot" resultType="product">
+        SELECT *
+        FROM easybuy_product
+        WHERE is_delete = 0
+        ORDER BY RAND()
+            LIMIT #{limit}
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO easybuy_product (name, description, price, stock,
+                                     category_level1_id, category_level2_id, category_level3_id,
+                                     file_name, create_time, is_delete)
+        VALUES
+            (#{name}, #{description}, #{price}, #{stock},
+             #{categoryLevel1Id}, #{categoryLevel2Id}, #{categoryLevel3Id},
+             #{fileName}, NOW(), 0)
+    </insert>
+
+    <!-- 修改 -->
+    <update id="update">
+        UPDATE easybuy_product
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="stock != null">
+                stock = #{stock},
+            </if>
+            <if test="categoryLevel1Id != null">
+                category_level1_id = #{categoryLevel1Id},
+            </if>
+            <if test="categoryLevel2Id != null">
+                category_level2_id = #{categoryLevel2Id},
+            </if>
+            <if test="categoryLevel3Id != null">
+                category_level3_id = #{categoryLevel3Id},
+            </if>
+            <if test="fileName != null">
+                file_name = #{fileName},
+            </if>
+        </set>
+        WHERE id = #{id} AND is_delete = 0
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteById">
+        UPDATE easybuy_product
+        SET is_delete = 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 提交订单：库存扣减至预出库（并发安全：WHERE stock >= quantity） -->
+    <update id="deductStock">
+        UPDATE easybuy_product
+        SET stock = stock - #{quantity},
+            pre_stock = pre_stock + #{quantity}
+        WHERE id = #{id}
+          AND stock >= #{quantity}
+    </update>
+
+    <!-- 付款成功：确认预出库 -->
+    <update id="confirmPreStock">
+        UPDATE easybuy_product
+        SET pre_stock = pre_stock - #{quantity}
+        WHERE id = #{id}
+          AND pre_stock >= #{quantity}
+    </update>
+
+    <!-- 取消订单：预出库回退至库存 -->
+    <update id="restorePreStock">
+        UPDATE easybuy_product
+        SET stock = stock + #{quantity},
+            pre_stock = pre_stock - #{quantity}
+        WHERE id = #{id}
+          AND pre_stock >= #{quantity}
+    </update>
+
+    <!-- 退款：库存回退 -->
+    <update id="restoreStock">
+        UPDATE easybuy_product
+        SET stock = stock + #{quantity}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

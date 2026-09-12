@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.maven.mapper.NewsMapper">
+
+    <!-- 分页条件查询 -->
+    <select id="selectPage" resultType="news">
+        SELECT * FROM easybuy_news
+        WHERE is_delete = 0
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND create_time &lt;= #{endTime}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询资讯 -->
+    <select id="selectAll" resultType="news">
+        SELECT *
+        FROM easybuy_news
+        WHERE is_delete = 0
+        ORDER BY create_time DESC
+            LIMIT #{limit}
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultType="news">
+        SELECT *
+        FROM easybuy_news
+        WHERE id = #{id}
+          AND is_delete = 0
+    </select>
+
+    <!-- 根据标题查询 -->
+    <select id="selectByTitle" resultType="news">
+        SELECT *
+        FROM easybuy_news
+        WHERE title = #{title}
+          AND is_delete = 0
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO easybuy_news (title, content, create_time, is_delete)
+        VALUES
+            (#{title}, #{content}, #{createTime}, 0)
+    </insert>
+
+    <!-- 修改 -->
+    <update id="update">
+        UPDATE easybuy_news
+        <set>
+            <if test="title != null">
+            title = #{title},
+            </if>
+            <if test="content != null">
+            content = #{content},
+            </if>
+            <if test="createTime != null">
+            create_time = #{createTime},
+            </if>
+        </set>
+        WHERE id = #{id} AND is_delete = 0
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteById">
+        UPDATE easybuy_news
+        SET is_delete = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

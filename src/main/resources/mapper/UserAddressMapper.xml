@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.maven.mapper.UserAddressMapper">
+
+    <!-- 根据用户ID查询地址列表 -->
+    <select id="selectByUserId" resultType="userAddress">
+        SELECT *
+        FROM easybuy_user_address
+        WHERE user_id = #{userId}
+          AND is_delete = 0
+        ORDER BY is_default DESC, create_time DESC
+    </select>
+
+    <!-- 统计用户地址 -->
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*)
+        FROM easybuy_user_address
+        WHERE user_id = #{userId}
+          AND is_delete = 0
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultType="userAddress">
+        SELECT *
+        FROM easybuy_user_address
+        WHERE id = #{id}
+          AND is_delete = 0
+    </select>
+
+    <!-- 查询用户默认地址 -->
+    <select id="selectDefaultByUserId" resultType="userAddress">
+        SELECT *
+        FROM easybuy_user_address
+        WHERE user_id = #{userId}
+          AND is_default = 1
+          AND is_delete = 0 LIMIT 1
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO easybuy_user_address (user_id, address, create_time, is_default, remark, is_delete)
+        VALUES
+            (#{userId}, #{address}, #{createTime}, #{isDefault}, #{remark}, 0)
+    </insert>
+
+    <!-- 修改 -->
+    <update id="update">
+        UPDATE easybuy_user_address
+        <set>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="isDefault != null">
+                is_default = #{isDefault},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+        </set>
+        WHERE id = #{id} AND is_delete = 0
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteById">
+        UPDATE easybuy_user_address
+        SET is_delete = 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 取消用户所有默认地址 -->
+    <update id="cancelDefaultByUserId">
+        UPDATE easybuy_user_address
+        SET is_default = 0
+        WHERE user_id = #{userId}
+          AND is_delete = 0
+    </update>
+
+</mapper>
